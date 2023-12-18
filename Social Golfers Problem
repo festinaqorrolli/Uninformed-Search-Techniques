@@ -1,0 +1,89 @@
+from itertools import combinations, permutations
+
+def is_valid_grouping(grouping, history):
+    for week in history:
+        for group in week:
+            if set(group).intersection(set(grouping)):
+                return False
+    return True
+
+def bfs_social_golfer(players, group_size, max_weeks):
+    queue = [([], 0)]
+    iteration = 0  # For tracking iterations
+    while queue:
+        history, week = queue.pop(0)
+        print(f"BFS iteration: {iteration}, Week: {week}")  # Print current iteration and week
+        iteration += 1
+
+        if week == max_weeks:
+            return history  # Found a valid schedule
+
+        if len(history) == week:
+            history.append([])
+
+        if len(history[week]) == players // group_size:
+            queue.append((history, week + 1))  # Move to the next week
+            continue
+
+        # Fix: Only consider players already grouped in the current week
+        current_week_players = set(player for group in history[week] for player in group)
+        remaining_players = set(range(players)) - current_week_players
+        for group in combinations(remaining_players, group_size):
+            if is_valid_grouping(group, history):
+                new_history = [w[:] for w in history]
+                new_history[week].append(group)
+                queue.append((new_history, week))
+
+    return None
+
+def dfs_social_golfer(players, group_size, max_weeks, history=[], week=0):
+    print(f"DFS: Week {week}, History: {history}")  # Print current week and history
+
+    if week == max_weeks:
+        return history
+
+    if week == len(history):
+        history.append([])
+
+    if len(history[week]) == players // group_size:
+        return dfs_social_golfer(players, group_size, max_weeks, history, week + 1)
+
+    # Fix: Only consider players already grouped in the current week
+    current_week_players = set(player for group in history[week] for player in group)
+    remaining_players = set(range(players)) - current_week_players
+    for group in combinations(remaining_players, group_size):
+        if is_valid_grouping(group, history):
+            history[week].append(group)
+            result = dfs_social_golfer(players, group_size, max_weeks, history, week)
+            if result:
+                return result
+            history[week].pop()
+
+    return None
+
+# User input for the problem parameters
+players = int(input("Enter the number of players: "))
+group_size = int(input("Enter the size of each group: "))
+max_weeks = int(input("Enter the maximum number of weeks: "))
+
+# User input for selecting the algorithm
+choice = input("Choose the algorithm to solve the Social Golfer Problem (BFS/DFS): ").strip().upper()
+
+# Solve the problem using the chosen algorithm
+if choice == 'BFS':
+    print("Solving using BFS...")
+    schedule = bfs_social_golfer(players, group_size, max_weeks)
+elif choice == 'DFS':
+    print("Solving using DFS...")
+    schedule = dfs_social_golfer(players, group_size, max_weeks)
+else:
+    print("Invalid choice. Please select 'BFS' or 'DFS'.")
+    schedule = None
+
+# Print the schedule if one is found
+if schedule:
+    print("A valid schedule has been found:")
+    for week, groups in enumerate(schedule):
+        print(f"Week {week + 1}: {[' '.join(map(str, g)) for g in groups]}")
+else:
+    print("No valid schedule could be found.")
