@@ -36,30 +36,40 @@ def bfs_social_golfer(players, group_size, max_weeks):
 
     return None
 
-def dfs_social_golfer(players, group_size, max_weeks, history=[], week=0):
-    print(f"DFS: Week {week}, History: {history}")  # Print current week and history
+def dfs_social_golfer(weeks, num_golfers, group_size):
+    # Create a list to hold the groups for each week
+    schedule = [[] for _ in range(weeks)]
 
-    if week == max_weeks:
-        return history
+    # Helper function to check if a golfer has already played with any other golfer in the group in previous weeks
+    def has_played_with(golfer, group, week):
+        for prev_week in range(week):
+            for prev_group in schedule[prev_week]:
+                if golfer in prev_group and any(g in prev_group for g in group):
+                    return True
+        return False
 
-    if week == len(history):
-        history.append([])
+    # Recursive function to try and assign golfers to groups
+    def assign_to_group(week, group, remaining_golfers):
+        if week == weeks:  # If all weeks are scheduled, we are done
+            return True
+        if not remaining_golfers:  # If no golfers left, move to next week
+            return assign_to_group(week + 1, [], list(range(num_golfers)))
+        if len(group) == group_size:  # If the group is full, add to the schedule
+            schedule[week].append(group)
+            return assign_to_group(week, [], remaining_golfers)
 
-    if len(history[week]) == players // group_size:
-        return dfs_social_golfer(players, group_size, max_weeks, history, week + 1)
+        for i, golfer in enumerate(remaining_golfers):
+            if not has_played_with(golfer, group, week):
+                if assign_to_group(week, group + [golfer], remaining_golfers[:i] + remaining_golfers[i+1:]):
+                    return True
+                # If we are here, it means we need to backtrack
+                schedule[week] = schedule[week][:-1]
+        return False
 
-    # Fix: Only consider players already grouped in the current week
-    current_week_players = set(player for group in history[week] for player in group)
-    remaining_players = set(range(players)) - current_week_players
-    for group in combinations(remaining_players, group_size):
-        if is_valid_grouping(group, history):
-            history[week].append(group)
-            result = dfs_social_golfer(players, group_size, max_weeks, history, week)
-            if result:
-                return result
-            history[week].pop()
-
-    return None
+    if assign_to_group(0, [], list(range(num_golfers))):
+        return schedule
+    else:
+        return "No solution could be found."
 
 # User input for the problem parameters
 players = int(input("Enter the number of players: "))
@@ -75,7 +85,7 @@ if choice == 'BFS':
     schedule = bfs_social_golfer(players, group_size, max_weeks)
 elif choice == 'DFS':
     print("Solving using DFS...")
-    schedule = dfs_social_golfer(players, group_size, max_weeks)
+    schedule = dfs_social_golfer(max_weeks, players, group_size)
 else:
     print("Invalid choice. Please select 'BFS' or 'DFS'.")
     schedule = None
