@@ -1,5 +1,13 @@
 from itertools import combinations, permutations
 
+# BFS
+# Time complexity: O(weeks x (players/group_size)^players/group_size)
+# Space complexity:O((players/group_size)^max_weeks)
+#
+# DFS
+# Time complexity:O(players^(group_size×weeks))
+# Space complexity:O(players x weeks)
+
 def is_valid_grouping(grouping, history):
     for week in history:
         for group in week:
