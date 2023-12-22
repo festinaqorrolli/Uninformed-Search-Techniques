@@ -2,6 +2,14 @@
 from collections import deque  # For implementing a queue in the BFS solver
 import copy  # For creating deep copies of the Sudoku board
 
+#BFS
+#Time Complexity:O(9^(n^2))
+#Space Complexity: O(n^2)
+
+#DFS
+#Time Complexity:O(9^(n^2))
+#Space Complexity:O(n^2)
+
 # Define a class for solving Sudoku using Depth-First Search (DFS)
 class SudokuSolverDFS:
     def __init__(self, board):  # Constructor method
